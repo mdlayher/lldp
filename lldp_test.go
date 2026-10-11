@@ -38,6 +38,15 @@ func TestFrameMarshalBinary(t *testing.T) {
 			err: ErrInvalidFrame,
 		},
 		{
+			desc: "TTL negative",
+			f: &Frame{
+				ChassisID: &ChassisID{},
+				PortID:    &PortID{},
+				TTL:       -time.Second,
+			},
+			err: ErrInvalidFrame,
+		},
+		{
 			desc: "too much data in ChassisID",
 			f: &Frame{
 				ChassisID: &ChassisID{
