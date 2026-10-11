@@ -59,8 +59,8 @@ type Frame struct {
 
 // MarshalBinary allocates a byte slice and marshals a Frame into binary form.
 //
-// If ChassisID or Port ID are nil, or TTL is greater than 65535 seconds,
-// ErrInvalidFrame is returned.
+// If ChassisID or Port ID are nil, or TTL is negative or greater than
+// 65535 seconds, ErrInvalidFrame is returned.
 //
 // If any problems are detected with TLVs, ErrInvalidTLV is returned.
 func (f *Frame) MarshalBinary() ([]byte, error) {
@@ -77,9 +77,10 @@ func (f *Frame) MarshalBinary() ([]byte, error) {
 		return nil, ErrInvalidFrame
 	}
 
-	// Ensure TTL fits in a uint16
+	// Ensure TTL fits in a uint16. A negative duration wraps to a large
+	// value, so it is rejected with the same error as an oversized TTL.
 	tTTL := f.TTL / time.Second
-	if tTTL > math.MaxUint16 {
+	if tTTL < 0 || tTTL > math.MaxUint16 {
 		return nil, ErrInvalidFrame
 	}
 	ttl := uint16(tTTL)
